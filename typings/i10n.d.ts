@@ -3,4 +3,17 @@
 /* eslint-disable */
 // @ts-nocheck
 export type FluentMessageId =
-  | 'cs-workbench-placeholder';
+  | 'cs-workbench-placeholder'
+  | 'cswb-menu-copy-artifact-links'
+  | 'cswb-menu-edit-tags'
+  | 'cswb-menu-export-related-work'
+  | 'cswb-menu-export-related-work-csv'
+  | 'cswb-menu-export-related-work-markdown'
+  | 'cswb-menu-generate-note'
+  | 'cswb-menu-refresh-venue'
+  | 'cswb-pane-artifacts-header'
+  | 'cswb-pane-artifacts-sidenav'
+  | 'cswb-pane-venue-header'
+  | 'cswb-pane-venue-sidenav'
+  | 'cswb-pane-workflow-header'
+  | 'cswb-pane-workflow-sidenav';
