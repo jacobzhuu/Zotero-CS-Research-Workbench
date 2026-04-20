@@ -1,0 +1,56 @@
+{
+  "name": "zotero-cs-research-workbench",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Zotero 7 plugin for CS researchers: venue metadata, artifact links, structured tags, note templates, and related-work export",
+  "config": {
+    "addonName": "Zotero CS Research Workbench",
+    "addonID": "cs-research-workbench@euclpts.com",
+    "addonRef": "cs-workbench",
+    "addonInstance": "CSWorkbench",
+    "prefsPrefix": "extensions.zotero.cs-workbench"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jacobzhuu/Zotero-CS-Research-Workbench.git"
+  },
+  "author": "jacobzhuu",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "start": "zotero-plugin serve",
+    "build": "zotero-plugin build && tsc --noEmit",
+    "lint:check": "prettier --check . && eslint .",
+    "lint:fix": "prettier --write . && eslint . --fix",
+    "release": "zotero-plugin release",
+    "test": "zotero-plugin test"
+  },
+  "dependencies": {
+    "zotero-plugin-toolkit": "^5.1.2"
+  },
+  "devDependencies": {
+    "@zotero-plugin/eslint-config": "^0.6.8",
+    "chai": "^6.2.2",
+    "eslint": "^9.39.1",
+    "mocha": "^11.7.5",
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "zotero-plugin-scaffold": "^0.8.4",
+    "zotero-types": "^4.1.2"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "tabWidth": 2,
+    "endOfLine": "lf",
+    "overrides": [
+      {
+        "files": [
+          "*.xhtml"
+        ],
+        "options": {
+          "htmlWhitespaceSensitivity": "css"
+        }
+      }
+    ]
+  }
+}

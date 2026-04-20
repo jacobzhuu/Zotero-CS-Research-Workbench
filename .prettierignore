@@ -1,0 +1,6 @@
+node_modules
+.scaffold
+build
+*.xpi
+package-lock.json
+*.ftl
