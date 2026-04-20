@@ -35,6 +35,8 @@ class Addon {
     artifactService: ArtifactHubService;
     readingNoteService: ReadingNoteTemplateService;
     relatedWorkService: RelatedWorkExportService;
+    preferenceObserverSymbols: symbol[];
+    preferencePaneID: string | null;
     registeredColumnKeys: string[];
     registeredMenuIDs: string[];
     registeredSectionIDs: string[];
@@ -77,6 +79,8 @@ class Addon {
       artifactService,
       readingNoteService,
       relatedWorkService,
+      preferenceObserverSymbols: [],
+      preferencePaneID: null,
       registeredColumnKeys: [],
       registeredMenuIDs: [],
       registeredSectionIDs: [],

@@ -1,12 +1,12 @@
-# Task Plan: Phase 0 and Phase 1 Execution
+# Task Plan: v0.1 Execution
 
 ## Goal
 
-Complete the repository audit and implement only the Phase 1 storage/model foundation required by `ToDoList.md`.
+Complete Phases 0 through 8 from `ToDoList.md` while keeping each phase scoped to its intended v0.1 deliverables.
 
 ## Current Phase
 
-Phase 5
+Phase 8
 
 ## Phases
 
@@ -46,12 +46,40 @@ Phase 5
 - [x] Explicitly state execution stopped after Phase 1
 - **Status:** complete
 
+### Phase 6: Build Product Modules
+
+- [x] Implement Venue Lite
+- [x] Implement Artifact Hub
+- [x] Implement Structured Tags Lite
+- [x] Implement Reading Note Template
+- [x] Implement Related Work Export
+- [x] Add focused module tests
+- **Status:** complete
+
+### Phase 7: UI Integration
+
+- [x] Add item-list columns
+- [x] Add detail-pane sections
+- [x] Add context-menu actions
+- [x] Add focused UI-helper tests
+- **Status:** complete
+
+### Phase 8: Stability, Settings, and Polish
+
+- [x] Add minimal preferences support for UI toggles and local-data reset
+- [x] Harden UI action failure paths and invalid-selection handling
+- [x] Tighten cache invalidation behavior for notifier-driven refreshes
+- [x] Update README to reflect actual implemented v0.1 behavior
+- [x] Re-run targeted build, lint, and local Mocha validation
+- **Status:** complete
+
 ## Decisions Made
 
 | Decision                                                                   | Rationale                                                                                                                    |
 | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Reuse the existing pref-backed storage layer instead of introducing SQLite | The repository already has a minimal storage module and Phase 1 does not require a heavier persistence backend               |
 | Add one minimal FTL locale file and ignore `*.ftl` in Prettier             | The scaffold generates invalid `typings/i10n.d.ts` when no locale messages exist, and Prettier does not parse FTL by default |
+| Keep Phase 8 settings limited to UI toggles and local-data reset           | This adds clear demo value without introducing a larger settings system                                                      |
 
 ## Errors Encountered
 

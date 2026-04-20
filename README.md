@@ -1,194 +1,96 @@
-
 # Zotero CS Research Workbench
 
-A Zotero 7 plugin for computer science researchers.
+A Zotero 7 plugin for computer science literature workflows.
 
-It augments Zotero items with lightweight CS-oriented metadata and workflow tools, including:
+It adds a small, local-first research workbench on top of Zotero items:
 
-- venue normalization and ranking display
-- artifact link aggregation
-- structured paper tags
-- reading note template generation
-- related work table export
+- venue normalization with CCF and CORE ranks
+- artifact link extraction for DOI, arXiv, OpenReview, code, and project URLs
+- structured `Task` / `Method` / `Dataset` / `Metric` tags
+- deterministic reading-note templates
+- related-work export to Markdown and CSV
+- minimal Zotero UI integration through columns, item-pane sections, context-menu actions, and a small preferences pane
 
-The goal is to turn Zotero from a generic reference manager into a practical literature workbench for CS research.
+The v0.1 target is deliberately narrow: stable local workflows, explicit overrides, and no speculative automation.
 
----
+## Status
 
-## Why this project
-
-Zotero is already strong for general reference management, but computer science researchers often need additional capabilities that are not first-class in the default experience:
-
-- quickly identify conference/journal venues and abbreviations
-- check CCF / CORE rank at a glance
-- open paper-related resources such as arXiv, OpenReview, code, and project pages
-- maintain structured tags like Task / Method / Dataset / Metric
-- generate consistent reading-note templates
-- export literature comparison tables for related work writing
-
-This plugin focuses on those high-frequency workflows.
-
----
-
-## Project status
-
-Current target: **v0.1**
-
-This repository is currently scoped to a strict first version.  
-The goal of v0.1 is **not** to build a full research platform, but to validate a compact, high-value Zotero workflow for CS users.
+Current scope: **v0.1 complete**
 
 See:
 
-- `PRD_v0.1.md` for product scope and acceptance criteria
-- `ToDoList.md` for engineering execution order and constraints
+- [PRD_v0.1.md](PRD_v0.1.md) for product intent
+- [ToDoList.md](ToDoList.md) for implementation phases and scope boundaries
 
----
+## Implemented in v0.1
 
-## v0.1 scope
+### Venue Lite
 
-v0.1 includes only the following modules:
+- deterministic venue extraction from Zotero metadata
+- local venue seed dataset for representative CS venues
+- alias matching plus conference/journal/unknown classification
+- resolved venue values:
+  - `Venue Short`
+  - `CCF Rank`
+  - `CORE Rank`
+- per-item venue override support
 
-1. **Venue Lite**
-2. **Artifact Hub**
-3. **Structured Tags Lite**
-4. **Reading Note Template**
-5. **Related Work Export**
+### Artifact Hub
 
-### 1) Venue Lite
-Enhance Zotero items with:
+- deterministic extraction and normalization for:
+  - DOI
+  - arXiv
+  - OpenReview
+  - existing URL fields
+- local artifact persistence
+- manual artifact override support for code and project links
 
-- venue short name
-- venue type
-- CCF rank
-- CORE rank
+### Structured Tags Lite
 
-Features:
-- venue normalization
-- alias matching
-- manual correction
-- safe local persistence
+- structured multi-value tags for:
+  - `Task`
+  - `Method`
+  - `Dataset`
+  - `Metric`
+- single-item replace / patch / append / remove / clear operations
+- batch append / remove / replace operations
+- minimal prompt-based editor from the Zotero context menu
 
-### 2) Artifact Hub
-Aggregate high-confidence paper resources:
+### Reading Note Template
 
-- DOI
-- arXiv
-- OpenReview
-- Code
-- Project
+- deterministic Markdown and plain-text note generation
+- optional Zotero child-note creation
+- metadata-aware header using current item plus existing local venue/artifact services
+- fixed default sections:
+  - Problem
+  - Core Idea
+  - Method Overview
+  - Experimental Setup
+  - Main Results
+  - Limitations
+  - Relation to My Work
 
-Features:
-- identifier extraction
-- local artifact storage
-- copy all links
-- open selected links
+### Related Work Export
 
-### 3) Structured Tags Lite
-Allow users to maintain lightweight multi-value tags for:
+- deterministic multi-item row assembly
+- Markdown table export
+- CSV export
+- fixed export fields:
+  - Title
+  - Year
+  - Venue Short
+  - CCF Rank
+  - CORE Rank
+  - Task
+  - Method
+  - Dataset
+  - Metric
+  - Code
+  - Notes
 
-- Task
-- Method
-- Dataset
-- Metric
+### Minimal UI Integration
 
-Features:
-- single-item editing
-- batch editing
-- local persistence
-- user overrides take precedence
-
-### 4) Reading Note Template
-Generate a note template for a selected paper with sections such as:
-
-- Problem
-- Core Idea
-- Method Overview
-- Experimental Setup
-- Main Results
-- Limitations
-- Relation to My Work
-
-Output targets:
-- Zotero Note
-- Markdown
-- plain text
-
-### 5) Related Work Export
-Export comparison tables for multiple selected papers.
-
-Output formats:
-- Markdown table
-- CSV
-
-Default export fields:
-- Title
-- Year
-- Venue Short
-- CCF Rank
-- CORE Rank
-- Task
-- Method
-- Dataset
-- Metric
-- Code
-- Notes
-
----
-
-## Explicitly out of scope for v0.1
-
-The following are intentionally excluded from the first release:
-
-- JCR / CAS / IF integration
-- high-accuracy automatic paper understanding
-- baseline / reproducibility scoring
-- paper type inference
-- topic map / knowledge graph
-- citation lineage graph
-- subscriptions / tracking / reminders
-- team collaboration
-- submission assistant
-- LLM-based analysis pipeline
-- heavy online services as core dependencies
-
----
-
-## Design principles
-
-This project follows a few strict rules:
-
-- **Stay within PRD v0.1 scope**
-- **Prefer small, reliable features over broad automation**
-- **Do not destructively modify original Zotero metadata**
-- **Store automatic results separately from user overrides**
-- **User overrides must always win**
-- **Fail safely when parsing or external resolution is incomplete**
-- **Keep the plugin usable offline for cached/local features**
-- **Favor maintainability over speculative abstraction**
-
----
-
-## Data model (v0.1)
-
-The plugin is expected to maintain local storage for these logical entities:
-
-- `venue_master`
-- `artifact_links`
-- `paper_tags`
-- `user_overrides`
-
-### Resolution priority
-
-Final displayed values must follow this rule:
-
-`user override > automatic resolved value > empty`
-
----
-
-## Planned UI surface
-
-### Item list columns
-Minimal columns planned for v0.1:
+#### Item list columns
 
 - Venue Short
 - CCF Rank
@@ -196,15 +98,13 @@ Minimal columns planned for v0.1:
 - Has Code
 - Has OpenReview
 
-### Detail pane cards
-Three cards are planned:
+#### Item-pane sections
 
-1. **Venue**
-2. **Artifacts**
-3. **Structure & Workflow**
+- Venue
+- Artifacts
+- Structure & Workflow
 
-### Context menu actions
-Planned actions:
+#### Context-menu actions
 
 - Refresh Venue Match
 - Edit Structured Tags
@@ -212,101 +112,194 @@ Planned actions:
 - Export Related Work
 - Copy Artifact Links
 
----
+#### Minimal preferences
 
-## Repository guidance for coding agents
+- enable or disable workbench item-list columns
+- enable or disable workbench item-pane sections
+- enable or disable workbench context-menu actions
+- reset local workbench data and reseed built-in venue data
 
-If you are using Codex / Claude Code / other coding agents:
+## Deliberately out of scope for v0.1
 
-- Read `ToDoList.md` first
-- Treat `ToDoList.md` as the execution contract
-- Use `PRD_v0.1.md` as the product boundary reference
-- Do not implement features outside v0.1 scope
-- Keep changes incremental and reviewable
-- Preserve existing repo architecture where possible
-- Do not claim completion unless wiring, storage, UI, and basic verification are all done
+- LLM features
+- paper summarization or content inference
+- related-work prose generation
+- citation graphs, topic maps, or submission assistant logic
+- collaboration features
+- cloud sync as a core requirement
+- Excel-native export
+- large custom settings or custom tag-editor UI
+- broader v0.2 workflow expansion
 
-Recommended rule:
+## Data model and precedence
 
-> If `ToDoList.md` and `PRD_v0.1.md` differ, follow `ToDoList.md` for execution order and `PRD_v0.1.md` for product intent and scope.
+Local workbench data is stored separately from original Zotero metadata.
 
----
+Logical storage entities:
 
-## Suggested development order
+- `venue_master`
+- `artifact_links`
+- `paper_tags`
+- `user_overrides`
 
-1. storage + typed model
-2. venue lite
-3. artifact hub
-4. structured tags lite
-5. reading note template
-6. related work export
-7. UI integration
-8. settings / error handling / documentation
+Resolved values always follow:
 
----
+`user override > automatic resolved value > empty`
 
-## Success criteria for v0.1
+The plugin does **not** overwrite original Zotero metadata.
 
-v0.1 is considered successful if a user can:
+## Development
 
-1. see venue short / CCF / CORE in the item list
-2. open a paper and see DOI / arXiv / OpenReview / Code / Project
-3. edit Task / Method / Dataset / Metric
-4. generate a reading note template with one click
-5. export Markdown / CSV related-work tables for multiple selected items
-6. rely on manual corrections that persist across refreshes
+### Requirements
 
----
+- Node.js
+- npm
+- Zotero 7 for live plugin testing
 
-## Build / run / test
+### Install
 
-> To be filled according to the actual repository structure.
+```bash
+npm install
+```
 
-Recommended sections to add after the repo bootstrap is confirmed:
+### Run in development
 
-- prerequisites
-- install
-- dev build
-- production build
-- test
-- packaging
-- screenshots
+```bash
+npm run start
+```
 
----
+This uses `zotero-plugin-scaffold` to build and serve the plugin for a Zotero development profile.
 
-## Roadmap
+### Build
 
-### v0.1
-- venue lite
-- artifact hub
-- structured tags lite
-- reading note template
-- related work export
+```bash
+npm run build
+```
 
-### v0.2
-Possible future extensions, not part of current implementation scope:
-- baseline / repro manual tags
-- paper type
-- more artifact types
-- lightweight suggestions
-- stronger batch editing and filtering
+This runs the scaffold build and then `tsc --noEmit`.
 
-### v0.3+
-Possible later directions:
-- citation lineage
-- topic clustering
-- tracking / subscriptions
-- collaboration
-- optional AI-assisted analysis
+### Lint and format
 
----
+```bash
+npm run lint:check
+npm run lint:fix
+```
 
-## License
+### Tests
 
-> To be decided.
+Zotero-integrated test runner:
 
----
+```bash
+npm test
+```
 
-## One-line summary
+Local Mocha path used during repository development when Zotero is unavailable:
 
-Zotero CS Research Workbench is a Zotero 7 plugin that adds CS-specific venue metadata, artifact links, lightweight structured tags, note templates, and related-work export tools to support real research workflows.
+```bash
+node --import tsx ./node_modules/mocha/bin/mocha.js \
+  --require ./test/storage/mochaGlobals.cjs \
+  "./test/storage/**/*.test.ts" \
+  "./test/venue/**/*.test.ts" \
+  "./test/artifact/**/*.test.ts" \
+  "./test/tags/**/*.test.ts" \
+  "./test/notes/**/*.test.ts" \
+  "./test/relatedWork/**/*.test.ts" \
+  "./test/ui/**/*.test.ts"
+```
+
+## Manual verification checklist
+
+Use a Zotero profile with the plugin loaded and a few CS paper items that cover venue, artifact, and tag cases.
+
+### Core UI
+
+- Verify the item list exposes:
+  - `Venue Short`
+  - `CCF Rank`
+  - `CORE Rank`
+  - `Has Code`
+  - `Has OpenReview`
+- Select a regular item and verify the item pane shows:
+  - `Venue`
+  - `Artifacts`
+  - `Structure & Workflow`
+- Select attachments or notes and verify the added sections fail safely or stay hidden.
+
+### Venue and artifacts
+
+- Confirm known venues normalize to the expected short name and ranks.
+- Confirm missing or unknown venue metadata degrades safely to empty values.
+- Confirm DOI, arXiv, OpenReview, code, and project links appear only when locally resolvable.
+
+### Structured tags
+
+- Use `Edit Structured Tags` from the item context menu.
+- Confirm prompt edits persist locally.
+- Confirm repeated append/remove flows remain stable and do not duplicate values unexpectedly.
+
+### Reading notes
+
+- Use `Generate Reading Note` on a regular item.
+- Confirm a Zotero child note is created.
+- Confirm the note contains the fixed section template and item-derived header metadata when available.
+
+### Related-work export
+
+- Select multiple regular items.
+- Use `Export Related Work` and verify Markdown and CSV clipboard output.
+- Confirm empty venue/artifact/tag fields serialize safely as empty cells.
+
+### Preferences
+
+- Open the plugin preference pane.
+- Disable and re-enable columns, sections, and context-menu actions.
+- Confirm the UI updates without restart.
+- Trigger `Reset local workbench data` and confirm:
+  - cached artifacts/tags/overrides are cleared
+  - built-in venue seed data remains available
+
+### Failure handling
+
+- Try actions with no valid regular-item selection.
+- Confirm the plugin shows safe no-op alerts instead of crashing.
+- Confirm clipboard-dependent flows fail cleanly if clipboard access is unavailable.
+
+## Screenshots
+
+Screenshots are not included yet.
+
+Suggested future additions:
+
+- item-list columns
+- item-pane sections
+- prompt-based structured-tag editor
+- related-work export results
+- preferences pane
+
+## Known limitations
+
+- Venue coverage is representative, not exhaustive.
+- Artifact detection is intentionally conservative and local-only.
+- Structured tag editing uses prompt dialogs, not a full custom editor.
+- Related-work `Notes` is currently exported as an empty column by design.
+- Item-pane artifact values render as text, not clickable links.
+- The plugin relies on Zotero runtime APIs for live behavior; full end-to-end UI automation is limited in this repository.
+
+## Architecture notes
+
+- Core storage lives under `src/modules/storage` and uses `Zotero.Prefs` JSON persistence.
+- Domain services live under:
+  - `src/modules/venue`
+  - `src/modules/artifact`
+  - `src/modules/tags`
+  - `src/modules/notes`
+  - `src/modules/relatedWork`
+- UI integration lives under `src/modules/ui`.
+- Plugin lifecycle wiring is centered in [src/hooks.ts](src/hooks.ts) and [src/addon.ts](src/addon.ts).
+
+## Guidance for future work
+
+- Treat `ToDoList.md` as the execution contract.
+- Use `PRD_v0.1.md` for scope intent and product boundaries.
+- Preserve the local-first storage and explicit override model.
+- Avoid broad refactors unless they are required for correctness or a clearly scoped new phase.

@@ -1,13 +1,71 @@
 import { createZToolkit } from "./utils/ztoolkit";
 import {
+  getWorkbenchUISettings,
   refreshWorkbenchUI,
   registerWorkbenchColumns,
   registerWorkbenchMenus,
+  registerWorkbenchPreferenceObservers,
+  registerWorkbenchPreferencePane,
   registerWorkbenchSections,
+  resetWorkbenchLocalData,
   unregisterWorkbenchColumns,
   unregisterWorkbenchMenus,
+  unregisterWorkbenchPreferenceObservers,
   unregisterWorkbenchSections,
 } from "./modules/ui";
+
+function syncWorkbenchUI() {
+  const copyPlainText = (text: string) => {
+    new addon.data.ztoolkit.Clipboard().addText(text, "text/unicode").copy();
+  };
+  const settings = getWorkbenchUISettings();
+
+  if (settings.enableColumns) {
+    if (addon.data.registeredColumnKeys.length === 0) {
+      addon.data.registeredColumnKeys = registerWorkbenchColumns(addon.data);
+    }
+  } else if (addon.data.registeredColumnKeys.length > 0) {
+    unregisterWorkbenchColumns(addon.data.registeredColumnKeys);
+    addon.data.registeredColumnKeys = [];
+  }
+
+  if (settings.enableSections) {
+    if (addon.data.registeredSectionIDs.length === 0) {
+      addon.data.registeredSectionIDs = registerWorkbenchSections(
+        addon.data,
+        copyPlainText,
+      );
+    }
+  } else if (addon.data.registeredSectionIDs.length > 0) {
+    unregisterWorkbenchSections(addon.data.registeredSectionIDs);
+    addon.data.registeredSectionIDs = [];
+  }
+
+  if (settings.enableContextMenu) {
+    if (addon.data.registeredMenuIDs.length === 0) {
+      addon.data.registeredMenuIDs = registerWorkbenchMenus(copyPlainText);
+    }
+  } else if (addon.data.registeredMenuIDs.length > 0) {
+    unregisterWorkbenchMenus(addon.data.registeredMenuIDs);
+    addon.data.registeredMenuIDs = [];
+  }
+}
+
+function getItemKeysFromNotifierIDs(
+  ids: Array<string | number>,
+): string[] | null {
+  const numericIDs = ids.filter((id): id is number => typeof id === "number");
+  if (numericIDs.length === 0) {
+    return null;
+  }
+
+  try {
+    const items = Zotero.Items.get(numericIDs);
+    return items.map((item) => item.key).filter(Boolean);
+  } catch {
+    return null;
+  }
+}
 
 async function onStartup() {
   await Promise.all([
@@ -17,16 +75,18 @@ async function onStartup() {
   ]);
 
   addon.data.venueService.ensureSeedData();
-  const copyPlainText = (text: string) => {
-    new addon.data.ztoolkit.Clipboard().addText(text, "text/unicode").copy();
-  };
-
-  addon.data.registeredColumnKeys = registerWorkbenchColumns(addon.data);
-  addon.data.registeredSectionIDs = registerWorkbenchSections(
-    addon.data,
-    copyPlainText,
+  addon.data.preferencePaneID = await registerWorkbenchPreferencePane();
+  addon.data.preferenceObserverSymbols = registerWorkbenchPreferenceObservers(
+    () => {
+      syncWorkbenchUI();
+      refreshWorkbenchUI();
+    },
+    () => {
+      resetWorkbenchLocalData(addon.data.storage, addon.data.venueService);
+      refreshWorkbenchUI();
+    },
   );
-  addon.data.registeredMenuIDs = registerWorkbenchMenus(copyPlainText);
+  syncWorkbenchUI();
   refreshWorkbenchUI();
   addon.data.initialized = true;
 }
@@ -47,6 +107,12 @@ async function onMainWindowUnload(win: Window): Promise<void> {
 }
 
 async function onShutdown(): Promise<void> {
+  unregisterWorkbenchPreferenceObservers(addon.data.preferenceObserverSymbols);
+  addon.data.preferenceObserverSymbols = [];
+  if (addon.data.preferencePaneID) {
+    Zotero.PreferencePanes.unregister(addon.data.preferencePaneID);
+    addon.data.preferencePaneID = null;
+  }
   unregisterWorkbenchMenus(addon.data.registeredMenuIDs);
   unregisterWorkbenchSections(addon.data.registeredSectionIDs);
   unregisterWorkbenchColumns(addon.data.registeredColumnKeys);
@@ -71,11 +137,19 @@ async function onNotify(
     return;
   }
 
+  if (!["add", "modify", "delete", "refresh"].includes(event)) {
+    return;
+  }
+
   if (ids.length === 0 && !extraData) {
     return;
   }
 
-  refreshWorkbenchUI();
+  refreshWorkbenchUI(
+    event === "delete"
+      ? undefined
+      : (getItemKeysFromNotifierIDs(ids) ?? undefined),
+  );
 }
 
 export default {

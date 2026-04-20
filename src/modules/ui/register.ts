@@ -77,12 +77,23 @@ function copyText(
     return false;
   }
 
-  copyPlainText(text);
-  return true;
+  try {
+    copyPlainText(text);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-function refreshVisibleUI(): void {
-  invalidateUIStateCache();
+function refreshVisibleUI(itemKeys?: readonly string[]): void {
+  if (!itemKeys || itemKeys.length === 0) {
+    invalidateUIStateCache();
+  } else {
+    for (const itemKey of itemKeys) {
+      invalidateUIStateCache(itemKey);
+    }
+  }
+
   Zotero.ItemTreeManager.refreshColumns();
   for (const pane of Zotero.getZoteroPanes()) {
     if (pane.itemPane) {
@@ -124,7 +135,12 @@ function createActionButton(
   button.textContent = label;
   button.style.marginRight = "8px";
   button.addEventListener("click", () => {
-    void onClick();
+    void Promise.resolve(onClick()).catch((error: unknown) => {
+      Zotero.logError(
+        error instanceof Error ? error : new Error(String(error)),
+      );
+      showAlert(getWindow(doc), "Action failed. See Zotero logs for details.");
+    });
   });
   return button;
 }
@@ -193,15 +209,20 @@ async function handleGenerateReadingNote(
   items: readonly Zotero.Item[] | undefined,
   doc: Document | null,
 ): Promise<void> {
-  const regularItems = getRegularWorkbenchItems(items ?? []);
-  const item = regularItems[0] ?? null;
-  const created = await generateReadingNoteForItem(item, addon.data);
-  if (!created) {
-    showAlert(getWindow(doc), "Select a single regular item first.");
-    return;
-  }
+  try {
+    const regularItems = getRegularWorkbenchItems(items ?? []);
+    const item = regularItems[0] ?? null;
+    const created = await generateReadingNoteForItem(item, addon.data);
+    if (!created) {
+      showAlert(getWindow(doc), "Select a single regular item first.");
+      return;
+    }
 
-  showAlert(getWindow(doc), "Reading note created.");
+    showAlert(getWindow(doc), "Reading note created.");
+  } catch (error) {
+    Zotero.logError(error instanceof Error ? error : new Error(String(error)));
+    showAlert(getWindow(doc), "Reading note creation failed.");
+  }
 }
 
 function handleExportRelatedWork(
@@ -210,18 +231,26 @@ function handleExportRelatedWork(
   copyPlainText: (text: string) => void,
   doc: Document | null,
 ): void {
-  const text = buildRelatedWorkExportText(items ?? [], format, addon.data);
-  if (!copyText(copyPlainText, text)) {
-    showAlert(getWindow(doc), "Select one or more regular items first.");
-    return;
-  }
+  try {
+    const text = buildRelatedWorkExportText(items ?? [], format, addon.data);
+    if (!copyText(copyPlainText, text)) {
+      showAlert(
+        getWindow(doc),
+        "Select one or more regular items first, or check clipboard access.",
+      );
+      return;
+    }
 
-  showAlert(
-    getWindow(doc),
-    format === "csv"
-      ? "Copied related-work CSV to the clipboard."
-      : "Copied related-work Markdown to the clipboard.",
-  );
+    showAlert(
+      getWindow(doc),
+      format === "csv"
+        ? "Copied related-work CSV to the clipboard."
+        : "Copied related-work Markdown to the clipboard.",
+    );
+  } catch (error) {
+    Zotero.logError(error instanceof Error ? error : new Error(String(error)));
+    showAlert(getWindow(doc), "Related-work export failed.");
+  }
 }
 
 function handleCopyArtifactLinks(
@@ -229,50 +258,71 @@ function handleCopyArtifactLinks(
   copyPlainText: (text: string) => void,
   doc: Document | null,
 ): void {
-  const regularItems = getRegularWorkbenchItems(items ?? []);
-  const text = buildCopyArtifactLinksText(regularItems[0] ?? null, addon.data);
-  if (!copyText(copyPlainText, text)) {
-    showAlert(getWindow(doc), "No artifact links are available for the item.");
-    return;
-  }
+  try {
+    const regularItems = getRegularWorkbenchItems(items ?? []);
+    const text = buildCopyArtifactLinksText(
+      regularItems[0] ?? null,
+      addon.data,
+    );
+    if (!copyText(copyPlainText, text)) {
+      showAlert(
+        getWindow(doc),
+        "No artifact links are available for the item, or clipboard access failed.",
+      );
+      return;
+    }
 
-  showAlert(getWindow(doc), "Copied artifact links to the clipboard.");
+    showAlert(getWindow(doc), "Copied artifact links to the clipboard.");
+  } catch (error) {
+    Zotero.logError(error instanceof Error ? error : new Error(String(error)));
+    showAlert(getWindow(doc), "Artifact-link copy failed.");
+  }
 }
 
 function handleRefreshVenue(
   items: readonly Zotero.Item[] | undefined,
   doc: Document | null,
 ): void {
-  const regularItems = getRegularWorkbenchItems(items ?? []);
-  const refreshed = refreshVenueForItem(regularItems[0] ?? null, addon.data);
-  if (!refreshed) {
-    showAlert(getWindow(doc), "Select a single regular item first.");
-    return;
-  }
+  try {
+    const regularItems = getRegularWorkbenchItems(items ?? []);
+    const refreshed = refreshVenueForItem(regularItems[0] ?? null, addon.data);
+    if (!refreshed) {
+      showAlert(getWindow(doc), "Select a single regular item first.");
+      return;
+    }
 
-  refreshVisibleUI();
-  showAlert(getWindow(doc), "Venue data refreshed.");
+    refreshVisibleUI();
+    showAlert(getWindow(doc), "Venue data refreshed.");
+  } catch (error) {
+    Zotero.logError(error instanceof Error ? error : new Error(String(error)));
+    showAlert(getWindow(doc), "Venue refresh failed.");
+  }
 }
 
 function handleEditStructuredTags(
   items: readonly Zotero.Item[] | undefined,
   doc: Document | null,
 ): void {
-  const regularItems = getRegularWorkbenchItems(items ?? []);
-  const win = getWindow(doc);
-  const updated = editStructuredTagsWithPrompts(
-    regularItems[0] ?? null,
-    (label, defaultValue) =>
-      win?.prompt(`${label} (use ';' or new lines)`, defaultValue) ?? null,
-    addon.data,
-  );
+  try {
+    const regularItems = getRegularWorkbenchItems(items ?? []);
+    const win = getWindow(doc);
+    const updated = editStructuredTagsWithPrompts(
+      regularItems[0] ?? null,
+      (label, defaultValue) =>
+        win?.prompt(`${label} (use ';' or new lines)`, defaultValue) ?? null,
+      addon.data,
+    );
 
-  if (updated === null) {
-    return;
+    if (updated === null) {
+      return;
+    }
+
+    refreshVisibleUI();
+    showAlert(win, "Structured tags updated.");
+  } catch (error) {
+    Zotero.logError(error instanceof Error ? error : new Error(String(error)));
+    showAlert(getWindow(doc), "Structured tag update failed.");
   }
-
-  refreshVisibleUI();
-  showAlert(win, "Structured tags updated.");
 }
 
 export function registerWorkbenchColumns(
@@ -499,6 +549,6 @@ export function unregisterWorkbenchMenus(menuIDs: readonly string[]): void {
   }
 }
 
-export function refreshWorkbenchUI(): void {
-  refreshVisibleUI();
+export function refreshWorkbenchUI(itemKeys?: readonly string[]): void {
+  refreshVisibleUI(itemKeys);
 }

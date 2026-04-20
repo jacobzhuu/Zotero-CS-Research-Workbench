@@ -1,0 +1,52 @@
+<vbox
+  id="cswb-pref-root"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  flex="1"
+>
+  <groupbox>
+    <label value="Interface" />
+    <vbox>
+      <checkbox
+        id="cswb-pref-enable-columns"
+        label="Enable custom item list columns"
+      />
+      <checkbox
+        id="cswb-pref-enable-sections"
+        label="Enable workbench detail pane sections"
+      />
+      <checkbox
+        id="cswb-pref-enable-context-menu"
+        label="Enable workbench context menu actions"
+      />
+      <description>
+        These toggles apply immediately and only affect the workbench UI
+        surfaces added by this plugin.
+      </description>
+    </vbox>
+  </groupbox>
+
+  <groupbox>
+    <label value="Local Data" />
+    <vbox>
+      <description>
+        Reset local workbench data to clear cached artifacts, structured tags,
+        and user overrides. Built-in venue seed data will be restored.
+      </description>
+      <button id="cswb-pref-reset-data" label="Reset local workbench data" />
+    </vbox>
+  </groupbox>
+
+  <groupbox>
+    <label value="Phase 8 Notes" />
+    <vbox>
+      <description>
+        Structured tag editing remains prompt-based in v0.1 by design.
+      </description>
+      <description>
+        This pane keeps settings intentionally minimal and does not add a larger
+        configuration system.
+      </description>
+    </vbox>
+  </groupbox>
+</vbox>

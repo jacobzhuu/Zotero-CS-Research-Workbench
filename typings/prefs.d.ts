@@ -7,7 +7,10 @@
 declare namespace _ZoteroTypes {
   interface Prefs {
     PluginPrefsMap: {
-      
+      "ui.enableColumns": boolean;
+      "ui.enableSections": boolean;
+      "ui.enableContextMenu": boolean;
+      "ui.resetDataNonce": number;
     };
   }
 }
