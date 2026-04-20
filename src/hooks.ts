@@ -7,7 +7,7 @@ async function onStartup() {
     Zotero.uiReadyPromise,
   ]);
 
-  // Phase 1: storage layer is ready, no UI registration yet
+  addon.data.venueService.ensureSeedData();
   addon.data.initialized = true;
 }
 

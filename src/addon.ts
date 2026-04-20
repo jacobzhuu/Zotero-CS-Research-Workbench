@@ -1,4 +1,5 @@
 import { config } from "../package.json";
+import { createVenueLiteService, type VenueLiteService } from "./modules/venue";
 import hooks from "./hooks";
 import {
   createWorkbenchStorage,
@@ -15,6 +16,7 @@ class Addon {
     ztoolkit: ZToolkit;
     windowToolkits: Map<Window, ZToolkit>;
     storage: WorkbenchStorage;
+    venueService: VenueLiteService;
     locale?: {
       current: any;
     };
@@ -22,10 +24,12 @@ class Addon {
   public hooks: typeof hooks;
   public api: {
     storage: WorkbenchStorage;
+    venue: VenueLiteService;
   };
 
   constructor() {
     const storage = createWorkbenchStorage();
+    const venueService = createVenueLiteService(storage);
 
     this.data = {
       alive: true,
@@ -33,12 +37,14 @@ class Addon {
       env: __env__,
       initialized: false,
       storage,
+      venueService,
       ztoolkit: createZToolkit(),
       windowToolkits: new Map(),
     };
     this.hooks = hooks;
     this.api = {
       storage,
+      venue: venueService,
     };
   }
 }
